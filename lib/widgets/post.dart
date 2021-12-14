@@ -155,7 +155,7 @@ class _PostState extends State<Post> {
     );
   }
 }
-
+//tttttttt
 /*showComments(BuildContext context,
     {required String postId, required String ownerId, required String mediaUrl}) {
   Navigator.push(context, MaterialPageRoute(builder: (context) {
