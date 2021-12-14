@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "800082342197",
+    "project_id": "bestplace-331512",
+    "storage_bucket": "bestplace-331512.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:800082342197:android:f67ef6ac1257d0cea09c7c",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "800082342197-en8a3q686sb9fer44u9va20qti2p3iep.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.myapp",
+            "certificate_hash": "5976c666b99a472542fbe1b839705be7a4d5c8b9"
+          }
+        },
+        {
+          "client_id": "800082342197-nbcd69ubn7ojrap48bmnn8eibnpafktl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBL_F4I0holmdniN-q-C64UgIHcoXole-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "800082342197-nbcd69ubn7ojrap48bmnn8eibnpafktl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "800082342197-08go8suaa2aeekkhb47klfub4kqdktb5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.entissar.myapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
