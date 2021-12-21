@@ -39,7 +39,6 @@ TextEditingController locationController=TextEditingController();
   final picker = ImagePicker();
 
   getImage() async {
-    Navigator.pop(context);
     final pickedFile = await picker.getImage(
         source: ImageSource.camera, maxHeight: 675, maxWidth: 960);
 

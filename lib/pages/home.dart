@@ -18,6 +18,11 @@ final Reference storageRef=FirebaseStorage.instance.ref();
 final usersRef =FirebaseFirestore.instance.collection("user");
 final postsRef =FirebaseFirestore.instance.collection("posts");
 
+final commentsRef = FirebaseFirestore.instance.collection('comments');
+final activityFeedRef = FirebaseFirestore.instance.collection('feed');
+final followersRef = FirebaseFirestore.instance.collection('followers');
+final followingRef = FirebaseFirestore.instance.collection('following');
+final timelineRef = FirebaseFirestore.instance.collection('timeline');
 final userRef = FirebaseFirestore.instance.collection('user').withConverter<User>(
   fromFirestore: (snapshot, _) => User.fromJson(snapshot.data()!),
   toFirestore: (user, _) => user.toJson(),

@@ -1,9 +1,24 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import "package:flutter/material.dart";
+import 'package:image_picker/image_picker.dart';
+import 'package:myapp/components/photo_profil.dart';
+import 'package:myapp/components/rounded_button.dart';
+import 'package:myapp/components/rounded_input_field.dart';
+import 'package:myapp/components/text_field_container.dart';
 import 'package:myapp/models/user.dart';
 import 'package:myapp/pages/home.dart';
+import 'package:myapp/pages/profile.dart';
 import 'package:myapp/widgets/progress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
+import 'package:image/image.dart' as Im;
+
+import '../constants.dart';
+
 
 class EditProfile extends StatefulWidget {
   final String currentUserId;
@@ -41,46 +56,94 @@ void initState() {
       isLoading=false;
     });
   }
-  Column buildDisplayNameField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Padding(
-            padding: EdgeInsets.only(top: 12.0),
-            child: Text(
-              "Display Name",
-              style: TextStyle(color: Colors.grey),
-            )),
-        TextField(
-          controller: displayNameController,
-          decoration: InputDecoration(
-            hintText: "Update Display Name",
-            errorText: _displayNameValid ? null : "Display Name too short",
+
+  File _image =File("");
+
+  bool isUploading = false;
+  String postId = Uuid().v4();
+  final picker = ImagePicker();
+
+  getImage() async {
+    Navigator.pop(context);
+    final pickedFile = await picker.getImage(
+        source: ImageSource.camera, maxHeight: 675, maxWidth: 960);
+
+    setState(() {_image = File(pickedFile!.path);
+    });
+  }
+
+  getImagegallery() async {
+    Navigator.pop(context);
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  selectImage(parentcontext) {
+    return showDialog(
+        context: parentcontext,
+        builder: (context) {
+          return SimpleDialog(
+            title: Text("Create Post"),
+            children: <Widget>[
+              SimpleDialogOption(
+                child: Text("Photo with Camera"),
+                onPressed: getImage,
+              ),
+              SimpleDialogOption(
+                child: Text("Image from Gallery"),
+                onPressed: getImagegallery,
+              ),
+              SimpleDialogOption(
+                child: Text("Cancel"),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          );
+        });
+  }
+
+  TextFieldContainer buildDisplayNameField() {
+    return TextFieldContainer(
+      nb: 0.8,
+      child: TextFormField(
+        controller: displayNameController,
+        cursorColor: kPrimaryColor,
+        decoration: InputDecoration(
+          icon: Icon(
+            Icons.person,
+            color: kPrimaryColor,
           ),
-        )
-      ],
+          hintText: "update bio profile",
+          errorText: _displayNameValid? null : "displayName too short",
+          border: InputBorder.none,
+        ),
+      ),
     );
   }
 
-  Column buildBioField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(top: 12.0),
-          child: Text(
-            "Bio",
-            style: TextStyle(color: Colors.grey),
+  TextFieldContainer buildBioField() {
+    return TextFieldContainer(
+      nb: 0.8,
+      child: TextFormField(
+        controller: bioController,
+        cursorColor: kPrimaryColor,
+        decoration: InputDecoration(
+          icon: Icon(
+            Icons.book,
+            color: kPrimaryColor,
           ),
+          hintText: "update bio profile",
+          errorText: _bioValid? null : "bio too short",
+          border: InputBorder.none,
         ),
-        TextField(
-          controller: bioController,
-          decoration: InputDecoration(
-            hintText: "Update Bio",
-            errorText: _bioValid ? null : "Bio too long",
-          ),
-        )
-      ],
+      ),
     );
   }
 
@@ -109,6 +172,36 @@ void initState() {
     await googleSignIn.signOut();
     Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
   }
+  compressImage() async {
+    final tempDir = await getTemporaryDirectory();
+    final path = tempDir.path;
+    dynamic imageFile = Im.decodeImage(_image.readAsBytesSync());
+    final compressedImageFile = File("$path/img_$postId.jpg")
+      ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
+    setState(() {
+      _image = compressedImageFile;
+    });
+  }
+
+  Future<String> uploadImage(imageFile) async {
+    UploadTask uploadTask =
+    storageRef.child("post_$postId.jpg").putFile(imageFile);
+    TaskSnapshot storageSnap = await uploadTask;
+    String downloadUrl = await storageSnap.ref.getDownloadURL();
+    return downloadUrl;
+  }
+
+  handleSubmit() async {
+
+    await compressImage();
+    String mediaUrl = await uploadImage(_image);
+    usersRef.doc(widget.currentUserId).update({
+      "photoUrl":  mediaUrl,
+    });
+
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,7 +216,7 @@ void initState() {
         ),
         actions: <Widget>[
           IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Profile(profileId:currentUser.id))),
             icon: Icon(
               Icons.done,
               size: 30.0,
@@ -139,7 +232,16 @@ void initState() {
           Container(
             child: Column(
               children: <Widget>[
-                Padding(
+                PhotoProfile(
+                  imagePath: user.photoUrl,
+
+                  isEdit: true,
+                  onClicked: () async {
+                    selectImage(context);
+                    await handleSubmit();
+                  },
+                ),
+                /*Padding(
                   padding: EdgeInsets.only(
                     top: 16.0,
                     bottom: 8.0,
@@ -149,7 +251,7 @@ void initState() {
                     backgroundImage:
                     CachedNetworkImageProvider(user.photoUrl),
                   ),
-                ),
+                ),*/
                 Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Column(
@@ -159,6 +261,7 @@ void initState() {
                     ],
                   ),
                 ),
+
                 RaisedButton(
                   onPressed: updateProfileData,
                   child: Text(
